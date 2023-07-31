@@ -1,35 +1,46 @@
-const Builder = @import("std").build.Builder;
+const std = @import("std");
+const Builder = std.Build;
+const fileSystem = std.fs;
+const concat = std.mem.concat;
 
-pub fn build(b: *Builder) void {
-	// Standard target options allows the person running `zig build` to choose
-	// what target to build for. Here we do not override the defaults, which
-	// means any target is allowed, and the default is native. Other options
-	// for restricting supported target set are available.
+pub fn addFolderOfCSourceFile(exe: *Builder.Step.Compile, path: []const u8) void
+{
+	var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+	defer arena.deinit();
+
+	var folder = fileSystem.cwd().openIterableDir(path, .{ .access_sub_paths = false, .no_follow = true }) catch unreachable;
+	defer folder.close();
+	
+	var folderIterator = folder.iterate();
+
+	while (folderIterator.next() catch unreachable) |entry|
+	{
+		const cSource = concat(arena.allocator(), u8, &[_][]const u8{ path, "/", entry.name }) catch unreachable;
+		exe.addCSourceFile(cSource, &[_][]const u8{});
+	}
+}
+
+pub fn build(b: *Builder) void 
+{
+	b.exe_dir = ".";
+	b.verbose = true;
+
 	const target = b.standardTargetOptions(.{});
-
-	// Standard optimization options allow the person running `zig build` to select
-	// between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall. Here we do not
-	// set a preferred release mode, allowing the user to decide how to optimize.
-	const optimize = b.standardOptimizeOption(.{});
-
-	const exe = b.addExecutable(.{
-		.name = "init-exe",
+	const exe = b.addExecutable(
+	.{
+		.name = "PngCompressor",
 		.root_source_file = .{ .path = "main.zig" },
 		.target = target,
-		.optimize = optimize,
+		.optimize = .ReleaseFast,
+		.link_libc = true,
+		.use_llvm = true,
+		.use_lld = true,
 	});
 
-	exe.addIncludePath(".");
-	exe.linkLibC();
+	exe.addCSourceFile("lodepng/lodepng.c", &[_][]const u8{});
+	exe.addIncludePath("lodepng");
+	addFolderOfCSourceFile(exe, "libimagequant/sources");
+	exe.addIncludePath("libimagequant/headers");
 
-	// This declares intent for the executable to be installed into the
-	// standard location when the user invokes the "install" step (the default
-	// step when running `zig build`).
 	b.installArtifact(exe);
-
-	const run_cmd = b.addRunArtifact(exe);
-	run_cmd.step.dependOn(b.getInstallStep());
-
-	const run_step = b.step("run", "Run the app");
-	run_step.dependOn(&run_cmd.step);
 }
