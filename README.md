@@ -1,6 +1,6 @@
 # PngCompressor
 
-The PngCompressor project is essentially a port of the [libimagequant](https://github.com/ImageOptim/libimagequant/tree/2.x) library to the Zig programming language, featuring the use of Zig's C code translation feature to load and save images through the [LodePNG](https://github.com/lvandeve/lodepng) library. It also employs the [zig-clap](https://github.com/Hejsil/zig-clap) library for efficiently processing console arguments provided to the application. PngCompressor provides command-line options to reduce the file size of PNG images with minimal quality loss.
+The PngCompressor project is essentially a port of the [libimagequant](https://github.com/ImageOptim/libimagequant/tree/2.x) library to the Zig programming language, featuring the use of Zig's C code interoperability feature to load and save images through the [LodePNG](https://github.com/lvandeve/lodepng) library. It also employs the [zig-clap](https://github.com/Hejsil/zig-clap) library for efficiently processing console arguments provided to the application. PngCompressor provides command-line options to reduce the file size of PNG images with minimal quality loss.
 
 ## Features
 - Efficient compression of PNG images.
@@ -9,7 +9,7 @@ The PngCompressor project is essentially a port of the [libimagequant](https://g
 
 ## Installation
 
-Building from source is straightforward. Follow these steps:
+Building from source is pretty straightforward. Follow these steps:
 
 1. Clone this repository to your local machine.
 
@@ -29,7 +29,7 @@ cd PngCompressor
 zig build -Dtarget="x86_64-linux" -Doptimize=ReleaseFast
 ```
 
-The build.zig file contains the necessary build instructions, and the project should also work on Windows and macOS.
+The build.zig file contains the necessary build instructions. The project should also work on Windows and macOS.
 
 ## Usage
 PngCompressor is a command-line tool, and all interactions occur via command-line arguments. Currently, there are three available options:
@@ -68,14 +68,14 @@ The images below demonstrate the quality of image compression achieved by PngCom
 <tbody>
   <tr>
     <td>
-    	<figure>
-    		<img src="./example/example1.png" />
+    	<figure style="text-align: center;">
+    		<img src="./example/example1.png" style="max-width: 100%; height: auto;" />
   		<figcaption>2.1 MiB</figcaption>
 	</figure>	
     </td>
     <td>
-	<figure>
-    		<img src="./example/example1_compressed.png" />
+	<figure style="text-align: center;">
+    		<img src="./example/example1_compressed.png" style="max-width: 100%; height: auto;" />
   		<figcaption>701.1 KiB</figcaption>
 	</figure>
     </td>
@@ -85,14 +85,14 @@ The images below demonstrate the quality of image compression achieved by PngCom
   </tr>
     <tr>
     <td>
-    	<figure>
-    		<img src="./example/example2.png" />
+    	<figure style="text-align: center;">
+    		<img src="./example/example2.png" style="max-width: 100%; height: auto;" />
   		<figcaption>577.8 KiB</figcaption>
 	</figure>	
     </td>
     <td>
-	<figure>
-    		<img src="./example/example2_compressed.png" />
+	<figure style="text-align: center;">
+    		<img src="./example/example2_compressed.png" style="max-width: 100%; height: auto;" />
   		<figcaption>178 KiB</figcaption>
 	</figure>
     </td>
@@ -102,14 +102,14 @@ The images below demonstrate the quality of image compression achieved by PngCom
   </tr>
     <tr>
     <td>
-    	<figure>
-    		<img src="./example/example3.png" />
+    	<figure style="text-align: center;">
+    		<img src="./example/example3.png" style="max-width: 100%; height: auto;" />
   		<figcaption>387.1 KiB</figcaption>
 	</figure>	
     </td>
     <td>
-	<figure>
-    		<img src="./example/example3_compressed.png" />
+	<figure style="text-align: center;">
+    		<img src="./example/example3_compressed.png" style="max-width: 100%; height: auto;" />
   		<figcaption>228.3 KiB</figcaption>
 	</figure>
     </td>
