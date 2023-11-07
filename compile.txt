@@ -1,1 +1,0 @@
-zig run main.zig libimagequant/sources/*.c lodepng/*.c -lc -I./libimagequant/headers -I./lodepng 
