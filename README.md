@@ -58,11 +58,11 @@ Note that you can also use absolute paths instead of relative ones if you prefer
 ## Screenshots
 The images below demonstrate the quality of image compression achieved by PngCompressor. The left image shows the original, and the right image shows the compressed version. Not really noticeable unless you look very closely.
 
-<table style="table-layout: fixed; width: 100%;">
+<table width="100%">
 <thead>
   <tr>
-    <th>Original Image</th>
-    <th>Compressed Image</th>
+    <th width="50%">Original Image</th>
+    <th width="50%">Compressed Image</th>
   </tr>
 </thead>
 <tbody>
