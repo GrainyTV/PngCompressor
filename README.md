@@ -58,7 +58,7 @@ Note that you can also use absolute paths instead of relative ones if you prefer
 ## Screenshots
 The images below demonstrate the quality of image compression achieved by PngCompressor. The left image shows the original, and the right image shows the compressed version. Not really noticeable unless you look very closely.
 
-<table width="100%">
+<table width="100%" cellpadding="0">
 <thead>
   <tr>
     <th width="50%">Original Image</th>
@@ -69,13 +69,13 @@ The images below demonstrate the quality of image compression achieved by PngCom
   <tr>
     <td>
     	<figure>
-    		<img src="./example/example1.png" width="100%" />
+    		<img src="./example/example1.png" />
   		<figcaption>2.1 MiB</figcaption>
 	</figure>	
     </td>
     <td>
 	<figure>
-    		<img src="./example/example1_compressed.png" width="100%" />
+    		<img src="./example/example1_compressed.png" />
   		<figcaption>701.1 KiB</figcaption>
 	</figure>
     </td>
@@ -86,13 +86,13 @@ The images below demonstrate the quality of image compression achieved by PngCom
     <tr>
     <td>
     	<figure>
-    		<img src="./example/example2.png" width="100%" />
+    		<img src="./example/example2.png" />
   		<figcaption>577.8 KiB</figcaption>
 	</figure>	
     </td>
     <td>
 	<figure>
-    		<img src="./example/example2_compressed.png" width="100%" />
+    		<img src="./example/example2_compressed.png" />
   		<figcaption>178 KiB</figcaption>
 	</figure>
     </td>
@@ -103,13 +103,13 @@ The images below demonstrate the quality of image compression achieved by PngCom
     <tr>
     <td>
     	<figure>
-    		<img src="./example/example3.png" width="100%" />
+    		<img src="./example/example3.png" />
   		<figcaption>387.1 KiB</figcaption>
 	</figure>	
     </td>
     <td>
 	<figure>
-    		<img src="./example/example3_compressed.png" width="100%" />
+    		<img src="./example/example3_compressed.png" />
   		<figcaption>228.3 KiB</figcaption>
 	</figure>
     </td>
