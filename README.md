@@ -68,14 +68,14 @@ The images below demonstrate the quality of image compression achieved by PngCom
 <tbody>
   <tr>
     <td>
-    	<figure style="text-align: center;">
-    		<img src="./example/example1.png" style="max-width: 100%; height: auto;" />
+    	<figure>
+    		<img src="./example/example1.png" width="50%" />
   		<figcaption>2.1 MiB</figcaption>
 	</figure>	
     </td>
     <td>
-	<figure style="text-align: center;">
-    		<img src="./example/example1_compressed.png" style="max-width: 100%; height: auto;" />
+	<figure>
+    		<img src="./example/example1_compressed.png" width="50%" />
   		<figcaption>701.1 KiB</figcaption>
 	</figure>
     </td>
@@ -85,14 +85,14 @@ The images below demonstrate the quality of image compression achieved by PngCom
   </tr>
     <tr>
     <td>
-    	<figure style="text-align: center;">
-    		<img src="./example/example2.png" style="max-width: 100%; height: auto;" />
+    	<figure>
+    		<img src="./example/example2.png" width="50%" />
   		<figcaption>577.8 KiB</figcaption>
 	</figure>	
     </td>
     <td>
-	<figure style="text-align: center;">
-    		<img src="./example/example2_compressed.png" style="max-width: 100%; height: auto;" />
+	<figure>
+    		<img src="./example/example2_compressed.png" width="50%" />
   		<figcaption>178 KiB</figcaption>
 	</figure>
     </td>
@@ -102,14 +102,14 @@ The images below demonstrate the quality of image compression achieved by PngCom
   </tr>
     <tr>
     <td>
-    	<figure style="text-align: center;">
-    		<img src="./example/example3.png" style="max-width: 100%; height: auto;" />
+    	<figure>
+    		<img src="./example/example3.png" width="50%" />
   		<figcaption>387.1 KiB</figcaption>
 	</figure>	
     </td>
     <td>
-	<figure style="text-align: center;">
-    		<img src="./example/example3_compressed.png" style="max-width: 100%; height: auto;" />
+	<figure>
+    		<img src="./example/example3_compressed.png" width="50%" />
   		<figcaption>228.3 KiB</figcaption>
 	</figure>
     </td>
