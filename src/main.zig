@@ -5,33 +5,28 @@
     const parse = @import("parser.zig");
 // ------------------------------
 
-pub fn main() !void 
+pub fn main() void 
 {
     var arena = std.heap.ArenaAllocator.init(std.heap.c_allocator);
     defer arena.deinit();
     const allocator = arena.allocator();
-    const parameters = try parse.HandleArguments(&allocator);
+    
+    const parsedParameters = parse.HandleArgumentsWithExceptions(&allocator);
 
-    if (parameters.areValid)
+    if (parsedParameters.HasValue())
     {
-        if (parameters.isFile and parameters.overwrite)
+        const parameters = parsedParameters.value.?;
+
+        if (parameters.overwrite and parameters.output.HasValue() == false)
         {
-            ar.CompressImage(&parameters.input.?[0], &parameters.input.?[0]);    
-        }
-        else if (parameters.isFile == false and parameters.overwrite)
-        {
-            for (parameters.input.?) |file|
+            for (parameters.input.value.?) |file|
             {
                 ar.CompressImage(&file, &file);
             }
         }
-        else if (parameters.isFile and parameters.overwrite == false)
-        {
-            ar.CompressImage(&parameters.input.?[0], &parameters.output.?[0]);
-        }
         else
         {
-            for (parameters.input.?, parameters.output.?) |input, output|
+            for (parameters.input.value.?, parameters.output.value.?) |input, output|
             {
                 ar.CompressImage(&input, &output);
             }

@@ -2,12 +2,16 @@
 // ------------------------------
     const std = @import("std");
     const convert = @import("convert.zig");
+    const maybe = @import("maybe.zig");
+    const parser = @import("parser.zig");
 // ------------------------------
 
 // Abbreviations
 // ------------------------------
     const workingDir = std.fs.cwd();
     const OpenError = std.fs.File.OpenError;
+    const Maybe = maybe.Maybe;
+    const ParseException = parser.ParseException;
 // ------------------------------
 
 pub const PathType = enum
@@ -18,25 +22,27 @@ pub const PathType = enum
 
 pub const RequiredParameters = struct
 {
-    input: ?[][*:0]const u8,
-    output: ?[][*:0]const u8,
+    input: Maybe([][*:0]const u8) = .{},
+    output: Maybe([][*:0]const u8) = .{},
     overwrite: bool = false,
-    areValid: bool = true,
-    isFile: bool,
+    isFile: bool = true,
 };
 
-pub fn FilesInFolder(path: *const []const u8, allocator: *const std.mem.Allocator) ![][*:0]const u8
+pub fn PngFilesInFolder(path: *const []const u8, allocator: *const std.mem.Allocator) ![][*:0]const u8
 {
     var list = std.ArrayList([*:0]const u8).init(allocator.*);
-    var folder = try workingDir.openIterableDir(path.*, .{ .access_sub_paths = false, .no_follow = true });
+    var folder = workingDir.openIterableDir(path.*, .{ .access_sub_paths = false, .no_follow = true }) catch unreachable;
     defer folder.close();
 
     var folderIterator = folder.iterate();
 
-    while (try folderIterator.next()) |file|
+    while (folderIterator.next() catch return ParseException.FileInaccessible) |file|
     {
-        const fileName = try allocator.dupeZ(u8, try std.fs.path.joinZ(allocator.*, &[_][]const u8{ path.*, file.name }));
-        try list.append(fileName);
+        if (IsPng(&file.name))
+        {
+            const fileName = try allocator.dupeZ(u8, try std.fs.path.joinZ(allocator.*, &[_][]const u8{ path.*, file.name }));
+            try list.append(fileName);
+        }
     }
 
     return list.toOwnedSlice();
@@ -44,21 +50,30 @@ pub fn FilesInFolder(path: *const []const u8, allocator: *const std.mem.Allocato
 
 pub fn GenerateOutputFiles(path: *const []const u8, inputFiles: *const [][*:0]const u8, allocator: *const std.mem.Allocator) ![][*:0]const u8
 {
-    var list = std.ArrayList([*:0]const u8).init(allocator.*);
+    var list = try std.ArrayList([*:0]const u8).initCapacity(allocator.*, inputFiles.len);
 
     for (inputFiles.*) |inputFile|
     {
         const rawFileName = std.fs.path.basename(convert.ToSlice(&inputFile));
+
+        if (rawFileName.len + path.len + 1 >= std.fs.MAX_PATH_BYTES)
+        {
+            return ParseException.TooLongPath;
+        }
+
         const fileName = try allocator.dupeZ(u8, try std.fs.path.joinZ(allocator.*, &[_][]const u8{ path.*, rawFileName }));
-        try list.append(fileName);
+        list.appendAssumeCapacity(fileName);
     }
 
     return list.toOwnedSlice();
 }
 
-pub fn IsPng(path: *const []const u8, allocator: *const std.mem.Allocator) !bool
+pub fn IsPng(path: *const []const u8) bool
 {
-    if (std.mem.eql(u8, try std.ascii.allocLowerString(allocator.*, std.fs.path.extension(path.*)), ".png"))
+    const fileExtension = std.fs.path.extension(path.*);
+    var lowerCopy: [4]u8 = undefined;
+
+    if (fileExtension.len == 4 and std.mem.eql(u8, std.ascii.lowerString(&lowerCopy, fileExtension), ".png"))
     {
         return true;
     }
@@ -68,96 +83,77 @@ pub fn IsPng(path: *const []const u8, allocator: *const std.mem.Allocator) !bool
     }
 }
 
-pub fn HandlePath(path: *const []const u8, pathVariant: PathType, imageParams: *RequiredParameters, io: u8, allocator: *const std.mem.Allocator) !void
+pub fn IsFile(path: *const []const u8) Maybe(bool)
 {
-    if (try IsPng(path, allocator))
+    var folderOrFile = workingDir.openFile(path.*, .{}) catch return .{};
+    defer folderOrFile.close();
+
+    const metadata = folderOrFile.metadata() catch return .{};
+
+    return switch (metadata.kind())
     {
-        if (io == 'i')
-        {
-            var inputFile = (if (pathVariant == PathType.Absolute) std.fs.openFileAbsolute(path.*, .{}) 
-                             else workingDir.openFile(path.*, .{}))
-                             catch |exception| default:
-            {
-                if (exception == OpenError.FileNotFound)
-                {
-                    std.debug.print("Provided {s} file does not exist.\n", .{if (io == 'i') "input" else "output"});
-                }
+        .directory => .{ .value = false },
+        .file => .{ .value = true },
+        else => .{},
+    };
+}
 
-                imageParams.areValid = false;
-                break :default null;
-            };
+pub fn Exists(path: *const []const u8) bool
+{
+    var folderOrFile = workingDir.openFile(path.*, .{}) catch return false;
+    defer folderOrFile.close();
 
-            if (inputFile) |file|
-            {
-                file.close();
-                var memory = try allocator.alloc([*:0]const u8, 1);
-                memory[0] = try convert.ToSentinel(path, allocator);
-                imageParams.isFile = true;
-                imageParams.input = memory;
-            }
-        }
-        else
-        {
-            if (imageParams.input == null)
-            {
-                std.debug.print("Please provide input in advance of the output.\n", .{});
-                imageParams.areValid = false;
-                return;
-            }
-            else if (imageParams.isFile == false)
-            {
-                std.debug.print("An explicit output location is only allowed with singular image files as input.\n", .{});
-                imageParams.areValid = false;
-                return;
-            }
-            else if (std.mem.eql(u8, convert.ToSlice(&imageParams.input.?[0]), path.*))
-            {
-                std.debug.print("Using the same input and output is only allowed with the force flag (-f, --force). In that case, specifying output is unnecessary.\n", .{});
-                std.debug.print("Otherwise, choose two distinct entries.\n", .{});
-                imageParams.areValid = false;
-                return;
-            }
-            
-            var memory = try allocator.alloc([*:0]const u8, 1);
-            memory[0] = try convert.ToSentinel(path, allocator);
-            imageParams.output = memory;
-        }
+    return true;
+}
+
+pub fn HandleInputPath(path: *const []const u8, imageParams: *RequiredParameters, allocator: *const std.mem.Allocator) !void
+{
+    const isFile = IsFile(path).value orelse return ParseException.FileInaccessible;
+
+    if (isFile)
+    {
+        const image = try convert.ToSentinel(path, allocator);
+        imageParams.input.value = try allocator.dupe([*:0]const u8, &[1][*:0]const u8{ image });
     }
     else
     {
-        var inputDir = (if (pathVariant == PathType.Absolute) std.fs.openDirAbsolute(path.*, .{ .access_sub_paths = false, .no_follow = true })
-                        else workingDir.openDir(path.*, .{ .access_sub_paths = false, .no_follow = true }))
-                        catch |exception| default:
+        imageParams.isFile = false;
+        imageParams.input.value = try PngFilesInFolder(path, allocator);
+    }
+}
+
+pub fn HandleOutputPath(path: *const []const u8, imageParams: *RequiredParameters, allocator: *const std.mem.Allocator) !void
+{
+    if (imageParams.input.HasValue() == false)
+    {
+        return ParseException.OutputAdvancesInput;
+    }
+        
+    const isFolder = if (imageParams.input.value.?.len > 1) true else false;
+
+    if (isFolder)
+    {
+        if (imageParams.isFile)
         {
-            if (exception == OpenError.FileNotFound)
-            {
-                std.debug.print("Provided {s} folder does not exist.\n", .{if (io == 'i') "input" else "output"});
-            }
-
-            imageParams.areValid = false;
-            break :default null;
-        };
-
-        if (inputDir) |dir|
-        {
-            @constCast(&dir).close();
-
-            if (io == 'i')
-            {
-                imageParams.isFile = false;
-                imageParams.input = try FilesInFolder(path, allocator);
-            }
-            else
-            {
-                if (imageParams.input == null)
-                {
-                    std.debug.print("Please provide input in advance of the output.\n", .{});
-                    imageParams.areValid = false;
-                    return;
-                }
-                
-                imageParams.output = try GenerateOutputFiles(path, &imageParams.input.?, allocator);
-            }    
+            return ParseException.MismatchedInputOutput;
         }
+
+        if (Exists(path) == false)
+        {
+            return ParseException.FileInaccessible;
+        }
+
+        const results = try GenerateOutputFiles(path, &imageParams.input.value.?, allocator);
+        imageParams.output.value = results;
+    }
+    else
+    {
+        if (imageParams.isFile == false)
+        {
+            return ParseException.MismatchedInputOutput;
+        }
+        
+        const image = try convert.ToSentinel(path, allocator);
+        imageParams.output.value = try allocator.dupe([*:0]const u8, &[1][*:0]const u8{ image });
     }
 }
