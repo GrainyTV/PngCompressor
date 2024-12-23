@@ -63,7 +63,7 @@ pub fn CompressImage(inputFile: *const [*:0]const u8, outputFile: *const [*:0]co
     // Use libimagequant to make new image pixels from the palette
     // ------------------------------
     const amountOfPixels: usize = width * height;
-    var rawEightBitPixels = c.malloc(amountOfPixels);
+    const rawEightBitPixels = c.malloc(amountOfPixels);
     defer c.free(rawEightBitPixels);
     
     _ = libimagequant.liq_set_dithering_level(quantizationResult, 1.0);

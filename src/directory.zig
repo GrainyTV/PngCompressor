@@ -31,7 +31,7 @@ pub const RequiredParameters = struct
 pub fn PngFilesInFolder(path: *const []const u8, allocator: *const std.mem.Allocator) ![][*:0]const u8
 {
     var list = std.ArrayList([*:0]const u8).init(allocator.*);
-    var folder = workingDir.openIterableDir(path.*, .{ .access_sub_paths = false, .no_follow = true }) catch unreachable;
+    var folder = workingDir.openDir(path.*, .{ .access_sub_paths = false, .no_follow = true, .iterate = true, }) catch unreachable;
     defer folder.close();
 
     var folderIterator = folder.iterate();

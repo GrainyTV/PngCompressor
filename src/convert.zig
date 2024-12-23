@@ -11,7 +11,7 @@ pub fn ToSentinel(slice: *const []const u8, allocator: *const std.mem.Allocator)
         return ParseException.TooLongPath;
     }
 
-    var buffer = try allocator.allocSentinel(u8, slice.len, 0);
+    const buffer = try allocator.allocSentinel(u8, slice.len, 0);
     @memcpy(buffer, slice.*);
     return buffer;
 }
